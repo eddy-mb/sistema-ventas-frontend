@@ -1,9 +1,13 @@
 import { Suspense } from "react";
-import { Sidebar } from "@/components/common/sidebar";
-import { Header } from "@/components/common/header";
+
 import { Footer } from "@/components/common/footer";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
-import { Toaster } from "@/components/ui/toaster";
+
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarContextProvider } from "@/context/siderbar-context";
+import Header from "@/components/common/header";
+import { AppSidebar } from "@/components/common/sidebar";
+import { Toaster } from "sonner";
 
 export default function DashboardLayout({
   children,
@@ -11,26 +15,18 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main Content */}
-      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-        {/* Header */}
-        <Header />
-
-        {/* Main Content Area */}
-        <main className="flex-1 p-4 md:p-6">
-          <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-        </main>
-
-        {/* Footer */}
-        <Footer />
-      </div>
-
-      {/* Toast notifications */}
-      <Toaster />
-    </div>
+    <SidebarContextProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <Header />
+          <main className="flex-1 p-4 md:p-6">
+            <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+          </main>
+          <Footer />
+        </SidebarInset>
+      </SidebarProvider>
+      <Toaster richColors position="top-right" />
+    </SidebarContextProvider>
   );
 }
