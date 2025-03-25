@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/theme-context";
-import { AuthContextProvider } from "@/context/auth-context";
+
 import { Toaster } from "sonner";
+import { NextAuthProvider } from "@/context/auth-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +31,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthContextProvider>
+        <NextAuthProvider>
           <ThemeProvider
             defaultTheme="system"
             attribute="class"
@@ -40,7 +41,7 @@ export default function RootLayout({
             {children}
             <Toaster richColors position="top-right" />
           </ThemeProvider>
-        </AuthContextProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );
