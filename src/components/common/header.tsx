@@ -11,12 +11,12 @@ import {
 } from "../ui/breadcrumb";
 import { SidebarTrigger } from "../ui/sidebar";
 import { SearchForm } from "./search-form";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Bell, LogOut, User } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ModeToggle } from "./modeToggle";
+import { NavbarUserMenu } from "./navbar-user-menu";
 
 function DynamicBreadcrumb() {
   const { activeItem } = useSidebarContext();
@@ -45,46 +45,6 @@ function DynamicBreadcrumb() {
         </BreadcrumbList>
       </Breadcrumb>
     </div>
-  );
-}
-
-function AvatarCustom() {
-  // const [showUserMenu, setShowUserMenu] = useState(false);
-  return (
-    <>
-      <Popover>
-        <PopoverTrigger>
-          <Avatar>
-            <AvatarImage src="/" alt="Usuario" />
-            <AvatarFallback>
-              <User className="h-5 w-5" />
-            </AvatarFallback>
-          </Avatar>
-        </PopoverTrigger>
-        <PopoverContent>
-          <div className="border-b border-border p-2">
-            <p className="font-medium">Juan Pérez</p>
-            <p className="text-xs text-muted-foreground">
-              juan.perez@example.com
-            </p>
-            <p className="text-xs text-muted-foreground">Administrador</p>
-          </div>
-          <div className="p-1">
-            <Link
-              href="/perfil"
-              className="flex items-center rounded-md px-2 py-1.5 text-sm hover:bg-accent"
-            >
-              <User className="mr-2 h-4 w-4" />
-              Mi Perfil
-            </Link>
-            <button className="flex w-full items-center rounded-md px-2 py-1.5 text-sm hover:bg-accent">
-              <LogOut className="mr-2 h-4 w-4" />
-              Cerrar Sesión
-            </button>
-          </div>
-        </PopoverContent>
-      </Popover>
-    </>
   );
 }
 
@@ -144,7 +104,7 @@ export default function Header() {
       </div>
       <ModeToggle />
       <Notifications />
-      <AvatarCustom />
+      <NavbarUserMenu />
     </header>
   );
 }
