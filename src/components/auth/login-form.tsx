@@ -55,9 +55,13 @@ export default function LoginForm() {
         password: data.password,
         redirect: false,
       });
-
       if (result?.error) {
-        setError(result.error);
+        const errorMessage =
+          result.error === "CredentialsSignin"
+            ? "Email o contraseña incorrectos. Por favor intente nuevamente."
+            : result.error;
+
+        setError(errorMessage);
         return;
       }
 
