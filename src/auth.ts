@@ -43,25 +43,6 @@ export const {
     error: "/login",
   },
   callbacks: {
-    authorized({ auth, request }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnDashboard = request.nextUrl.pathname.startsWith("/");
-      const isOnAuth =
-        request.nextUrl.pathname.startsWith("/login") ||
-        request.nextUrl.pathname.startsWith("/register");
-
-      // Si está en páginas de autenticación y ya está logueado, redirigir al dashboard
-      if (isOnAuth && isLoggedIn) {
-        return Response.redirect(new URL("/", request.nextUrl));
-      }
-
-      // Si intenta acceder al dashboard sin estar logueado, redirigir al login
-      if (isOnDashboard && !isLoggedIn && !isOnAuth) {
-        return Response.redirect(new URL("/login", request.nextUrl));
-      }
-
-      return true;
-    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id ?? "";
@@ -109,7 +90,7 @@ export const {
               }),
             }
           );
-
+          console.log("=========================", res);
           if (!res.ok) {
             const errorData = await res.json();
             throw new Error(errorData.detail || "Credenciales inválidas");

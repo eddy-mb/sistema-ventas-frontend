@@ -1,38 +1,36 @@
-// src/middleware.ts
 import { auth } from "./auth";
 
 export default auth((req) => {
   const { nextUrl, auth } = req;
   const isLoggedIn = !!auth;
-  const isAuthRoute =
-    nextUrl.pathname.startsWith("/login") ||
-    nextUrl.pathname.startsWith("/register");
-  const isDashboardRoute =
-    !isAuthRoute &&
-    nextUrl.pathname !== "/" &&
-    !nextUrl.pathname.startsWith("/_next") &&
-    !nextUrl.pathname.startsWith("/api") &&
-    !nextUrl.pathname.includes(".");
+  const path = nextUrl.pathname;
 
-  // Allow public routes
-  if (!isDashboardRoute && !isAuthRoute) {
-    return;
+  // Define rutas públicas y de autenticación de manera más específica
+  const isAuthRoute = path === "/login" || path === "/register";
+
+  // Rutas del dashboard más específicas
+  const isDashboardRoute =
+    path === "/" ||
+    (path.startsWith("/") &&
+      !path.startsWith("/login") &&
+      !path.startsWith("/register") &&
+      !path.startsWith("/api") &&
+      !path.includes("."));
+
+  // Si está en páginas de autenticación y ya está logueado, redirigir al dashboard
+  if (isAuthRoute && isLoggedIn) {
+    return Response.redirect(new URL("/", nextUrl.origin));
   }
 
-  // Redirect to login if not logged in and trying to access protected route
-  if (!isLoggedIn && isDashboardRoute) {
+  // Si intenta acceder al dashboard sin estar logueado, redirigir al login
+  if (isDashboardRoute && !isLoggedIn) {
     const redirectUrl = new URL("/login", nextUrl.origin);
     redirectUrl.searchParams.set("callbackUrl", nextUrl.href);
     return Response.redirect(redirectUrl);
   }
-
-  // Redirect to dashboard if logged in and trying to access auth routes
-  if (isLoggedIn && isAuthRoute) {
-    return Response.redirect(new URL("/", nextUrl.origin));
-  }
 });
 
-// Configuración del middleware para que se ejecute en estas rutas
+// Configuración del middleware
 export const config = {
   matcher: [
     // Skip static files and api routes that don't need auth
