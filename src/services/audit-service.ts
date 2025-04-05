@@ -1,5 +1,5 @@
-// src/services/audit-service.ts
-import { getSession } from "next-auth/react";
+//  TODO: no se esta implementando
+import { createModuleApi, ApiError } from "@/lib/axios";
 
 // Tipos de acciones que se pueden auditar
 export type AuditAction =
@@ -34,41 +34,49 @@ export interface AuditData {
   entityId?: string;
 }
 
+// Interfaz para respuestas de auditoría
+export interface AuditLogResponse {
+  id: string;
+  action: AuditAction;
+  module: AuditModule;
+  details: string;
+  entityId?: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  ipAddress: string;
+  timestamp: string;
+}
+
+// Interfaz para filtros de búsqueda de logs
+export interface AuditLogFilter {
+  startDate?: string;
+  endDate?: string;
+  action?: AuditAction;
+  module?: AuditModule;
+  userId?: string;
+  entityId?: string;
+  page?: number;
+  limit?: number;
+}
+
 /**
  * Servicio para registrar acciones de auditoría en el sistema
  */
 class AuditService {
+  private api;
+
+  constructor() {
+    // Utilizamos el helper createModuleApi para las rutas de auditoría
+    this.api = createModuleApi<AuditLogResponse>("/admin/auditoria");
+  }
+
   /**
    * Registra una acción en el log de auditoría
    */
-  async logAction(data: AuditData) {
-    const session = await getSession();
-
-    if (!session) {
-      console.warn("Intentando registrar auditoría sin una sesión activa");
-      return false;
-    }
-
+  async logAction(data: AuditData): Promise<boolean> {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/auditoria`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.token}`,
-          },
-          body: JSON.stringify({
-            ...data,
-            userId: session.user.id,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Error al registrar la acción en auditoría");
-      }
-
+      await this.api.post("", data);
       return true;
     } catch (error) {
       console.error("Error al registrar auditoría:", error);
@@ -77,9 +85,36 @@ class AuditService {
   }
 
   /**
+   * Obtiene los logs de auditoría con filtros
+   */
+  async getLogs(
+    filters: AuditLogFilter = {}
+  ): Promise<{ logs: AuditLogResponse[]; total: number }> {
+    try {
+      // Convertimos los filtros a parámetros de consulta
+      const params = new URLSearchParams();
+
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          params.append(key, value.toString());
+        }
+      });
+
+      return await this.api.get<{ logs: AuditLogResponse[]; total: number }>(
+        `?${params.toString()}`
+      );
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || "Error al obtener los logs de auditoría"
+      );
+    }
+  }
+
+  /**
    * Registra una acción de login
    */
-  async logLogin(userId: string) {
+  async logLogin(userId: string): Promise<boolean> {
     return this.logAction({
       action: "login",
       module: "auth",
@@ -91,7 +126,7 @@ class AuditService {
   /**
    * Registra una acción de logout
    */
-  async logLogout(userId: string) {
+  async logLogout(userId: string): Promise<boolean> {
     return this.logAction({
       action: "logout",
       module: "auth",
@@ -103,7 +138,11 @@ class AuditService {
   /**
    * Registra una acción de creación
    */
-  async logCreate(module: AuditModule, entityId: string, entityName: string) {
+  async logCreate(
+    module: AuditModule,
+    entityId: string,
+    entityName: string
+  ): Promise<boolean> {
     return this.logAction({
       action: "create",
       module,
@@ -115,7 +154,11 @@ class AuditService {
   /**
    * Registra una acción de actualización
    */
-  async logUpdate(module: AuditModule, entityId: string, entityName: string) {
+  async logUpdate(
+    module: AuditModule,
+    entityId: string,
+    entityName: string
+  ): Promise<boolean> {
     return this.logAction({
       action: "update",
       module,
@@ -127,13 +170,58 @@ class AuditService {
   /**
    * Registra una acción de eliminación
    */
-  async logDelete(module: AuditModule, entityId: string, entityName: string) {
+  async logDelete(
+    module: AuditModule,
+    entityId: string,
+    entityName: string
+  ): Promise<boolean> {
     return this.logAction({
       action: "delete",
       module,
       details: `Eliminación de ${entityName}`,
       entityId,
     });
+  }
+
+  /**
+   * Registra una acción de visualización
+   */
+  async logView(
+    module: AuditModule,
+    entityId: string,
+    entityName: string
+  ): Promise<boolean> {
+    return this.logAction({
+      action: "view",
+      module,
+      details: `Visualización de ${entityName}`,
+      entityId,
+    });
+  }
+
+  /**
+   * Registra una acción de exportación
+   */
+  async logExport(module: AuditModule, details: string): Promise<boolean> {
+    return this.logAction({
+      action: "export",
+      module,
+      details,
+    });
+  }
+
+  /**
+   * Obtiene el detalle de un log específico
+   */
+  async getLogDetail(logId: string): Promise<AuditLogResponse> {
+    try {
+      return await this.api.get<AuditLogResponse>(`/${logId}`);
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || "Error al obtener el detalle del log"
+      );
+    }
   }
 }
 

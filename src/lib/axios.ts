@@ -256,12 +256,14 @@ export const createAxiosInstance = (
 };
 
 // Exportar función para crear configuraciones específicas por módulo
-export const createModuleApi = <T = unknown>(basePath: string) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const createModuleApi = <T = any>(basePath: string) => {
   return {
     get: <R = T>(url: string, config?: AxiosRequestConfig) =>
       axiosClient.get<R>(`${basePath}${url}`, config).then((res) => res.data),
 
-    post: <R = T, D = Record<string, unknown>>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    post: <R = T, D = Record<string, any>>(
       url: string,
       data?: D,
       config?: AxiosRequestConfig
@@ -270,7 +272,8 @@ export const createModuleApi = <T = unknown>(basePath: string) => {
         .post<R>(`${basePath}${url}`, data, config)
         .then((res) => res.data),
 
-    put: <R = T, D = Record<string, unknown>>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    put: <R = T, D = Record<string, any>>(
       url: string,
       data?: D,
       config?: AxiosRequestConfig
@@ -279,7 +282,8 @@ export const createModuleApi = <T = unknown>(basePath: string) => {
         .put<R>(`${basePath}${url}`, data, config)
         .then((res) => res.data),
 
-    patch: <R = T, D = Record<string, unknown>>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    patch: <R = T, D = Record<string, any>>(
       url: string,
       data?: D,
       config?: AxiosRequestConfig
