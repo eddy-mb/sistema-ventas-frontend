@@ -16,66 +16,78 @@ export function useAuth() {
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
       // Solo registramos la primera vez que se autentica (no en cada renderizado)
-      const lastLoginTime = sessionStorage.getItem('lastLoginTime');
+      const lastLoginTime = sessionStorage.getItem("lastLoginTime");
       const currentTime = new Date().getTime();
-      
+
       // Solo registrar si no hay login previo o si han pasado al menos 5 minutos
-      if (!lastLoginTime || (currentTime - parseInt(lastLoginTime)) > 5 * 60 * 1000) {
+      if (
+        !lastLoginTime ||
+        currentTime - parseInt(lastLoginTime) > 5 * 60 * 1000
+      ) {
         auditService.logLogin(session.user.id).catch(console.error);
-        sessionStorage.setItem('lastLoginTime', currentTime.toString());
+        sessionStorage.setItem("lastLoginTime", currentTime.toString());
       }
     }
   }, [status, session?.user?.id]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      setLoading(true);
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+  const login = useCallback(
+    async (email: string, password: string) => {
+      try {
+        setLoading(true);
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
 
-      if (result?.error) {
-        toast.error("Error de autenticación: " + result.error);
+        if (result?.error) {
+          toast.error("Error de autenticación: " + result.error);
+          return {
+            success: false,
+            error: result.error,
+          };
+        }
+
+        // Actualizar la sesión para asegurarnos de tener los datos más recientes
+        await update();
+
+        router.refresh();
+        toast.success("Inicio de sesión exitoso");
+        return { success: true };
+      } catch (error) {
         return {
           success: false,
-          error: result.error
+          error: error instanceof Error ? error.message : "Error desconocido",
         };
+      } finally {
+        setLoading(false);
       }
+    },
+    [router, update]
+  );
 
-      // Actualizar la sesión para asegurarnos de tener los datos más recientes
-      await update();
-      
-      router.refresh();
-      toast.success("Inicio de sesión exitoso");
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Error desconocido",
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, [router, update]);
-
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    try {
-      setLoading(true);
-      await authService.register({ name, email, password });
-      toast.success("Registro exitoso. Ahora puedes iniciar sesión.");
-      return { success: true };
-    } catch (error) {
-      toast.error("Error en el registro: " + (error instanceof Error ? error.message : "Error desconocido"));
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Error desconocido",
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const register = useCallback(
+    async (name: string, email: string, password: string) => {
+      try {
+        setLoading(true);
+        await authService.register({ name, email, password });
+        toast.success("Registro exitoso. Ahora puedes iniciar sesión.");
+        return { success: true };
+      } catch (error) {
+        toast.error(
+          "Error en el registro: " +
+            (error instanceof Error ? error.message : "Error desconocido")
+        );
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Error desconocido",
+        };
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const logout = useCallback(async () => {
     setLoading(true);
@@ -92,7 +104,7 @@ export function useAuth() {
       }
 
       await signOut({ redirect: false });
-      sessionStorage.removeItem('lastLoginTime');
+      sessionStorage.removeItem("lastLoginTime");
       toast.info("Sesión cerrada correctamente");
       router.push("/login");
       router.refresh();
@@ -104,13 +116,74 @@ export function useAuth() {
     }
   }, [router, session?.user?.id]);
 
-  const hasPermission = useCallback((permission: string) => {
-    return authService.hasPermission(session, permission);
-  }, [session]);
+  // Función para solicitar restablecimiento de contraseña
+  const requestPasswordReset = useCallback(async (email: string) => {
+    try {
+      setLoading(true);
+      const response = await authService.requestPasswordReset(email);
+      if (response.success) {
+        toast.success(response.message || "Instrucciones enviadas a tu correo");
+      }
+      return response;
+    } catch (error) {
+      toast.error(
+        "Error al solicitar recuperación: " +
+          (error instanceof Error ? error.message : "Error desconocido")
+      );
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Error desconocido",
+      };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const hasRole = useCallback((role: string) => {
-    return authService.hasRole(session, role);
-  }, [session]);
+  // Función para restablecer contraseña con token
+  const resetPassword = useCallback(
+    async (token: string, password: string, confirmPassword: string) => {
+      try {
+        setLoading(true);
+        const response = await authService.resetPassword(
+          token,
+          password,
+          confirmPassword
+        );
+        if (response.success) {
+          toast.success(
+            response.message || "Contraseña restablecida correctamente"
+          );
+        }
+        return response;
+      } catch (error) {
+        toast.error(
+          "Error al restablecer contraseña: " +
+            (error instanceof Error ? error.message : "Error desconocido")
+        );
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Error desconocido",
+        };
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const hasPermission = useCallback(
+    (permission: string) => {
+      return authService.hasPermission(session, permission);
+    },
+    [session]
+  );
+
+  const hasRole = useCallback(
+    (role: string) => {
+      return authService.hasRole(session, role);
+    },
+    [session]
+  );
 
   return {
     session,
@@ -119,6 +192,8 @@ export function useAuth() {
     login,
     register,
     logout,
+    requestPasswordReset,
+    resetPassword,
     hasPermission,
     hasRole,
   };

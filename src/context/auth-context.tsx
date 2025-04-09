@@ -9,7 +9,10 @@ interface AuthContextType {
   session: ReturnType<typeof useAuth>["session"];
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{
     success: boolean;
     error?: string;
   }>;
@@ -24,6 +27,22 @@ interface AuthContextType {
   logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
   hasRole: (role: string) => boolean;
+
+  //  Métodos para recuperación de contraseña
+  requestPasswordReset: (email: string) => Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  }>;
+  resetPassword: (
+    token: string,
+    password: string,
+    confirmPassword: string
+  ) => Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  }>;
 }
 
 // Valor inicial para el contexto
@@ -32,10 +51,21 @@ const defaultContextValue: AuthContextType = {
   isAuthenticated: false,
   isLoading: false,
   login: async () => ({ success: false, error: "AuthContext no inicializado" }),
-  register: async () => ({ success: false, error: "AuthContext no inicializado" }),
+  register: async () => ({
+    success: false,
+    error: "AuthContext no inicializado",
+  }),
   logout: async () => {},
   hasPermission: () => false,
   hasRole: () => false,
+  requestPasswordReset: async () => ({
+    success: false,
+    error: "AuthContext no inicializado",
+  }),
+  resetPassword: async () => ({
+    success: false,
+    error: "AuthContext no inicializado",
+  }),
 };
 
 // Creamos el contexto con el valor por defecto
