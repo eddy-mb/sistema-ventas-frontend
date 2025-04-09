@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/context/auth-context";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,9 +27,8 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
-  const router = useRouter();
+  const { login, isLoading: authLoading } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const {
@@ -47,32 +45,17 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      setIsLoading(true);
       setError(null);
 
-      const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-      if (result?.error) {
-        const errorMessage =
-          result.error === "CredentialsSignin"
-            ? "Email o contraseña incorrectos. Por favor intente nuevamente."
-            : result.error;
+      const result = await login(data.email, data.password);
 
-        setError(errorMessage);
+      if (!result.success) {
+        setError(result.error || "Error de autenticación");
         return;
       }
-
-      // Redirect to dashboard
-      router.push("/");
-      router.refresh();
     } catch (error) {
       setError("Ocurrió un error. Intente de nuevo más tarde.");
       console.error("Login error:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -102,7 +85,7 @@ export default function LoginForm() {
             type="email"
             placeholder="ejemplo@amawaratour.com"
             autoComplete="email"
-            disabled={isLoading}
+            disabled={authLoading}
             {...register("email")}
           />
           {errors.email && (
@@ -126,7 +109,7 @@ export default function LoginForm() {
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               autoComplete="current-password"
-              disabled={isLoading}
+              disabled={authLoading}
               {...register("password")}
             />
             <Button
@@ -153,8 +136,8 @@ export default function LoginForm() {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+        <Button type="submit" className="w-full" disabled={authLoading}>
+          {authLoading ? "Iniciando sesión..." : "Iniciar sesión"}
         </Button>
       </form>
 

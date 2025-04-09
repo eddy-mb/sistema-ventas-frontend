@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuthContext } from "@/context/auth-context";
-import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,10 +15,9 @@ import { UserIcon, LogOutIcon, SettingsIcon, UserCogIcon } from "lucide-react";
 import Link from "next/link";
 
 export function NavbarUserMenu() {
-  const { data: session } = useSession();
-  const { logout } = useAuthContext();
+  const { session, isAuthenticated, logout } = useAuthContext();
 
-  if (!session) {
+  if (!isAuthenticated || !session) {
     return (
       <div className="flex items-center gap-2">
         <Link href="/login">

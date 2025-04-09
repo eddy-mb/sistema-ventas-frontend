@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { toast } from "sonner";
 import { useAuthContext } from "@/context/auth-context";
 import {
   Card,
@@ -17,7 +16,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      toast.success(`Bienvenido, ${session?.user.name}`);
       console.log("Estado de autenticación:", isAuthenticated);
       console.log("Información de sesión:", session);
     }

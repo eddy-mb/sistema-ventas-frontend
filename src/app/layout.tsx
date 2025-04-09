@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/context/theme-context";
 
 import { Toaster } from "sonner";
-import { NextAuthProvider } from "@/context/auth-context";
+import { NextAuthProvider, AuthProvider } from "@/context/auth-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,15 +32,17 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NextAuthProvider>
-          <ThemeProvider
-            defaultTheme="system"
-            attribute="class"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster richColors position="top-right" />
-          </ThemeProvider>
+          <AuthProvider>
+            <ThemeProvider
+              defaultTheme="system"
+              attribute="class"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster richColors position="top-right" />
+            </ThemeProvider>
+          </AuthProvider>
         </NextAuthProvider>
       </body>
     </html>
