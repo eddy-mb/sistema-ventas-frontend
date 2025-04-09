@@ -1,10 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig: NextAuthConfig = {
-  pages: {
-    signIn: "/login",
-    newUser: "/register",
-  },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
@@ -17,8 +13,9 @@ export const authConfig: NextAuthConfig = {
           !path.startsWith("/api"));
       if (isOnDashboard) {
         if (isLoggedIn) return true;
-        return false;
-      } else if (isLoggedIn) {
+        return false; // Redirige a login si no está autenticado
+      } else if (isLoggedIn && (path.startsWith("/login") || path.startsWith("/register"))) {
+        // Si el usuario está autenticado e intenta acceder a login/register, redirigir al dashboard
         return Response.redirect(new URL("/", nextUrl));
       }
       return true;

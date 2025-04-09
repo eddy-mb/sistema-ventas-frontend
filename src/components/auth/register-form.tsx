@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuthContext } from "@/context/auth-context";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,8 +39,8 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const router = useRouter();
+  const { register: registerUser, isLoading: authLoading } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
@@ -60,38 +61,20 @@ export default function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      setIsLoading(true);
       setError(null);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: data.name,
-            email: data.email,
-            password: data.password,
-          }),
-        }
-      );
+      const result = await registerUser(data.name, data.email, data.password);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        setError(result.detail || "Error al registrar usuario");
+      if (!result.success) {
+        setError(result.error || "Error al registrar usuario");
         return;
       }
 
-      // Redirect to login page
+      // Redirigir a la página de inicio de sesión
       router.push("/login?registered=true");
     } catch (error) {
       setError("Ocurrió un error. Intente de nuevo más tarde.");
       console.error("Register error:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -119,7 +102,7 @@ export default function RegisterForm() {
           <Input
             id="name"
             placeholder="Juan Pérez"
-            disabled={isLoading}
+            disabled={authLoading}
             {...register("name")}
           />
           {errors.name && (
@@ -134,7 +117,7 @@ export default function RegisterForm() {
             type="email"
             placeholder="ejemplo@amawaratour.com"
             autoComplete="email"
-            disabled={isLoading}
+            disabled={authLoading}
             {...register("email")}
           />
           {errors.email && (
@@ -149,7 +132,7 @@ export default function RegisterForm() {
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
-              disabled={isLoading}
+              disabled={authLoading}
               {...register("password")}
             />
             <Button
@@ -183,7 +166,7 @@ export default function RegisterForm() {
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               placeholder="••••••••"
-              disabled={isLoading}
+              disabled={authLoading}
               {...register("confirmPassword")}
             />
             <Button
@@ -212,8 +195,8 @@ export default function RegisterForm() {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Registrando..." : "Registrarse"}
+        <Button type="submit" className="w-full" disabled={authLoading}>
+          {authLoading ? "Registrando..." : "Registrarse"}
         </Button>
       </form>
 
