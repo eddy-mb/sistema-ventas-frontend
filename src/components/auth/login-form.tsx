@@ -5,13 +5,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuthContext } from "@/context/auth-context";
+import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TriangleAlertIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { EyeIcon, EyeOffIcon, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const loginSchema = z.object({
   email: z
@@ -21,26 +23,37 @@ const loginSchema = z.object({
   password: z
     .string()
     .min(1, { message: "La contraseña es requerida" })
-    .min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
+    .min(8, { message: "La contraseña debe tener al menos 8 caracteres" }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const { login, isLoading: authLoading } = useAuthContext();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const searchParams = useSearchParams();
+
+  // Verificar si el usuario viene de un registro exitoso
+  const registered = searchParams.get("registered") === "true";
+
+  // Verificar si el correo fue verificado con éxito
+  const emailVerified = searchParams.get("emailVerified") === "true";
+
+  // Verificar si viene de un restablecimiento de contraseña exitoso
+  const passwordReset = searchParams.get("passwordReset") === "true";
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
+    mode: "onChange", // Validar campos al cambiar
   });
 
   const onSubmit = async (data: LoginFormValues) => {
@@ -53,9 +66,9 @@ export default function LoginForm() {
         setError(result.error || "Error de autenticación");
         return;
       }
-    } catch (error) {
-      setError("Ocurrió un error. Intente de nuevo más tarde.");
-      console.error("Login error:", error);
+    } catch (err) {
+      setError(err);
+      console.error("Login error:", err);
     }
   };
 
@@ -70,12 +83,38 @@ export default function LoginForm() {
         </p>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <TriangleAlertIcon className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+      {/* Mensajes de éxito */}
+      {registered && (
+        <Alert className="bg-green-50 border-green-200 text-green-800">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-700">
+            Registro exitoso. Por favor inicia sesión con tus credenciales.
+          </AlertDescription>
         </Alert>
       )}
+
+      {emailVerified && (
+        <Alert className="bg-green-50 border-green-200 text-green-800">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-700">
+            Tu correo ha sido verificado correctamente. Ya puedes iniciar
+            sesión.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {passwordReset && (
+        <Alert className="bg-green-50 border-green-200 text-green-800">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-700">
+            Tu contraseña ha sido restablecida correctamente. Ya puedes iniciar
+            sesión.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Mensaje de error - Modificado para evitar el error de tipo */}
+      {error !== null && <ErrorMessage error={error} showDetails={false} />}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
@@ -86,6 +125,8 @@ export default function LoginForm() {
             placeholder="ejemplo@amawaratour.com"
             autoComplete="email"
             disabled={authLoading}
+            aria-invalid={errors.email ? "true" : "false"}
+            className={errors.email ? "border-destructive" : ""}
             {...register("email")}
           />
           {errors.email && (
@@ -110,6 +151,8 @@ export default function LoginForm() {
               placeholder="••••••••"
               autoComplete="current-password"
               disabled={authLoading}
+              aria-invalid={errors.password ? "true" : "false"}
+              className={errors.password ? "border-destructive" : ""}
               {...register("password")}
             />
             <Button
@@ -136,8 +179,14 @@ export default function LoginForm() {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={authLoading}>
-          {authLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={authLoading || isSubmitting || !isValid}
+        >
+          {authLoading || isSubmitting
+            ? "Iniciando sesión..."
+            : "Iniciar sesión"}
         </Button>
       </form>
 

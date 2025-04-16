@@ -11,8 +11,9 @@ import { useAuthContext } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TriangleAlertIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { PasswordIndicador } from "./Password-indicador";
 
 const registerSchema = z
   .object({
@@ -40,7 +41,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export default function RegisterForm() {
   const router = useRouter();
   const { register: registerUser, isLoading: authLoading } = useAuthContext();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
@@ -48,7 +49,8 @@ export default function RegisterForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
+    watch,
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -57,7 +59,11 @@ export default function RegisterForm() {
       password: "",
       confirmPassword: "",
     },
+    mode: "onChange",
   });
+
+  // Observar el valor de la contraseña para validación en tiempo real
+  const password = watch("password");
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
@@ -72,9 +78,9 @@ export default function RegisterForm() {
 
       // Redirigir a la página de inicio de sesión
       router.push("/login?registered=true");
-    } catch (error) {
-      setError("Ocurrió un error. Intente de nuevo más tarde.");
-      console.error("Register error:", error);
+    } catch (err) {
+      setError(err);
+      console.error("Register error:", err);
     }
   };
 
@@ -89,12 +95,7 @@ export default function RegisterForm() {
         </p>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <TriangleAlertIcon className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {error !== null && <ErrorMessage error={error} showDetails={false} />}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
@@ -102,7 +103,9 @@ export default function RegisterForm() {
           <Input
             id="name"
             placeholder="Juan Pérez"
-            disabled={authLoading}
+            disabled={authLoading || isSubmitting}
+            aria-invalid={errors.name ? "true" : "false"}
+            className={errors.name ? "border-destructive" : ""}
             {...register("name")}
           />
           {errors.name && (
@@ -117,7 +120,9 @@ export default function RegisterForm() {
             type="email"
             placeholder="ejemplo@amawaratour.com"
             autoComplete="email"
-            disabled={authLoading}
+            disabled={authLoading || isSubmitting}
+            aria-invalid={errors.email ? "true" : "false"}
+            className={errors.email ? "border-destructive" : ""}
             {...register("email")}
           />
           {errors.email && (
@@ -132,7 +137,9 @@ export default function RegisterForm() {
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
-              disabled={authLoading}
+              disabled={authLoading || isSubmitting}
+              aria-invalid={errors.password ? "true" : "false"}
+              className={errors.password ? "border-destructive" : ""}
               {...register("password")}
             />
             <Button
@@ -166,7 +173,9 @@ export default function RegisterForm() {
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               placeholder="••••••••"
-              disabled={authLoading}
+              disabled={authLoading || isSubmitting}
+              aria-invalid={errors.confirmPassword ? "true" : "false"}
+              className={errors.confirmPassword ? "border-destructive" : ""}
               {...register("confirmPassword")}
             />
             <Button
@@ -195,8 +204,15 @@ export default function RegisterForm() {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={authLoading}>
-          {authLoading ? "Registrando..." : "Registrarse"}
+        {/* Indicadores de seguridad de contraseña */}
+        {password && <PasswordIndicador password={password} />}
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={authLoading || isSubmitting || !isValid}
+        >
+          {authLoading || isSubmitting ? "Registrando..." : "Registrarse"}
         </Button>
       </form>
 

@@ -5,14 +5,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { authService } from "@/services/auth-service";
-import { toast } from "sonner";
+import { useAuthContext } from "@/context/auth-context";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TriangleAlertIcon, CheckCircle } from "lucide-react";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { CheckCircle } from "lucide-react";
 
 const forgotPasswordSchema = z.object({
   email: z
@@ -24,45 +23,37 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { requestPasswordReset, isLoading } = useAuthContext();
+  const [error, setError] = useState<unknown | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
     },
+    mode: "onChange",
   });
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
     try {
-      setIsLoading(true);
       setError(null);
 
-      const response = await authService.requestPasswordReset(data.email);
+      const response = await requestPasswordReset(data.email);
 
-      if (response.success) {
-        setIsSubmitted(true);
-        toast.success("Instrucciones enviadas a tu correo electrónico");
-      } else {
-        setError(
-          response.message || "Ocurrió un error al procesar tu solicitud"
-        );
+      if (!response.success) {
+        setError(response.error || "Ocurrió un error al procesar tu solicitud");
+        return;
       }
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Error al solicitar la recuperación"
-      );
-      toast.error("No se pudo procesar la solicitud");
-    } finally {
-      setIsLoading(false);
+
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err);
+      console.error("Error al solicitar recuperación:", err);
     }
   };
 
@@ -86,8 +77,8 @@ export default function ForgotPasswordForm() {
             enviado para restablecer tu contraseña.
           </p>
           <p className="text-center text-sm text-muted-foreground mb-4">
-            Si no recibes el correo en unos minutos, verifica tu carpeta de
-            spam.
+            Si no recibes el correo en unos minutos, verifica tu carpeta de spam
+            o intenta nuevamente.
           </p>
           <Button asChild className="w-full">
             <Link href="/login">Volver al inicio de sesión</Link>
@@ -108,12 +99,7 @@ export default function ForgotPasswordForm() {
         </p>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <TriangleAlertIcon className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {error !== null && <ErrorMessage error={error} showDetails={false} />}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
@@ -123,7 +109,9 @@ export default function ForgotPasswordForm() {
             type="email"
             placeholder="ejemplo@amawaratour.com"
             autoComplete="email"
-            disabled={isLoading}
+            disabled={isLoading || isSubmitting}
+            aria-invalid={errors.email ? "true" : "false"}
+            className={errors.email ? "border-destructive" : ""}
             {...register("email")}
           />
           {errors.email && (
@@ -131,8 +119,12 @@ export default function ForgotPasswordForm() {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Enviando..." : "Enviar instrucciones"}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading || isSubmitting || !isValid}
+        >
+          {isLoading || isSubmitting ? "Enviando..." : "Enviar instrucciones"}
         </Button>
       </form>
 
