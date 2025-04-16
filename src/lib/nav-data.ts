@@ -21,7 +21,6 @@ import {
 
 // Export the navigation data so it can be used in multiple components
 export const navData = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: [
     {
       title: "Dashboard",

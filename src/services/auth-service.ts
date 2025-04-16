@@ -1,4 +1,3 @@
-// src/services/auth-service.ts
 import { createModuleApi, ApiError } from "@/lib/axios";
 import { Session } from "next-auth";
 
@@ -44,6 +43,14 @@ export interface ChangePasswordData {
   confirmPassword: string;
 }
 
+// Respuesta genérica para operaciones de autenticación
+export interface AuthResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: ApiError | Error | unknown;
+}
+
 // Clase de servicio de autenticación
 class AuthService {
   private api;
@@ -54,56 +61,92 @@ class AuthService {
   }
 
   // Método para hacer login
-  async login(email: string, password: string): Promise<LoginResponse> {
+  async login(
+    email: string,
+    password: string
+  ): Promise<AuthResponse<LoginResponse>> {
     try {
-      return await this.api.post<LoginResponse>("/login", { email, password });
+      const data = await this.api.post<LoginResponse>("/login", {
+        email,
+        password,
+      });
+      return {
+        success: true,
+        data,
+        message: "Inicio de sesión exitoso",
+      };
     } catch (error) {
-      // Convertimos cualquier error a ApiError para un manejo consistente
-      const apiError = error as ApiError;
-      throw new Error(apiError.message || "Error en la autenticación");
+      return {
+        success: false,
+        error,
+        message:
+          error instanceof ApiError ? error.message : "Error al iniciar sesión",
+      };
     }
   }
 
   // Método para registrar un nuevo usuario
-  async register(data: RegisterData): Promise<RegisterResponse> {
+  async register(data: RegisterData): Promise<AuthResponse<RegisterResponse>> {
     try {
-      return await this.api.post<RegisterResponse>("/register", data);
+      const response = await this.api.post<RegisterResponse>("/register", data);
+      return {
+        success: true,
+        data: response,
+        message: response.message || "Registro exitoso",
+      };
     } catch (error) {
-      const apiError = error as ApiError;
-      throw new Error(apiError.message || "Error en el registro");
+      return {
+        success: false,
+        error,
+        message:
+          error instanceof ApiError ? error.message : "Error en el registro",
+      };
     }
   }
 
   // Método para cambiar la contraseña
-  async changePassword(
-    data: ChangePasswordData
-  ): Promise<{ success: boolean; message: string }> {
+  async changePassword(data: ChangePasswordData): Promise<AuthResponse> {
     try {
-      return await this.api.post<{ success: boolean; message: string }>(
-        "/change-password",
-        data
-      );
+      const response = await this.api.post<{
+        success: boolean;
+        message: string;
+      }>("/change-password", data);
+      return {
+        success: response.success,
+        message: response.message || "Contraseña cambiada exitosamente",
+      };
     } catch (error) {
-      const apiError = error as ApiError;
-      throw new Error(apiError.message || "Error al cambiar la contraseña");
+      return {
+        success: false,
+        error,
+        message:
+          error instanceof ApiError
+            ? error.message
+            : "Error al cambiar la contraseña",
+      };
     }
   }
 
   // Método para solicitar restablecimiento de contraseña
-  async requestPasswordReset(
-    email: string
-  ): Promise<{ success: boolean; message: string }> {
+  async requestPasswordReset(email: string): Promise<AuthResponse> {
     try {
-      return await this.api.post<{ success: boolean; message: string }>(
-        "/forgot-password",
-        { email }
-      );
+      const response = await this.api.post<{
+        success: boolean;
+        message: string;
+      }>("/forgot-password", { email });
+      return {
+        success: response.success,
+        message: response.message || "Instrucciones enviadas a tu correo",
+      };
     } catch (error) {
-      const apiError = error as ApiError;
-      throw new Error(
-        apiError.message ||
-          "Error al solicitar el restablecimiento de contraseña"
-      );
+      return {
+        success: false,
+        error,
+        message:
+          error instanceof ApiError
+            ? error.message
+            : "Error al solicitar el restablecimiento de contraseña",
+      };
     }
   }
 
@@ -112,30 +155,48 @@ class AuthService {
     token: string,
     password: string,
     confirmPassword: string
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<AuthResponse> {
     try {
-      return await this.api.post<{ success: boolean; message: string }>(
-        "/reset-password",
-        {
-          token,
-          password,
-          confirmPassword,
-        }
-      );
+      const response = await this.api.post<{
+        success: boolean;
+        message: string;
+      }>("/reset-password", {
+        token,
+        password,
+        confirmPassword,
+      });
+      return {
+        success: response.success,
+        message: response.message || "Contraseña restablecida exitosamente",
+      };
     } catch (error) {
-      const apiError = error as ApiError;
-      throw new Error(apiError.message || "Error al restablecer la contraseña");
+      return {
+        success: false,
+        error,
+        message:
+          error instanceof ApiError
+            ? error.message
+            : "Error al restablecer la contraseña",
+      };
     }
   }
 
   // Método para cerrar sesión en el backend (invalida el token)
-  async logout(): Promise<{ success: boolean }> {
+  async logout(): Promise<AuthResponse> {
     try {
-      return await this.api.post<{ success: boolean }>("/logout");
-    } catch {
-      // Si hay un error al cerrar sesión en el backend, aún así consideramos
-      // que la sesión se cerró correctamente en el cliente
-      return { success: true };
+      await this.api.post<{ success: boolean }>("/logout");
+      return {
+        success: true,
+        message: "Sesión cerrada exitosamente",
+      };
+    } catch (error) {
+      // Incluso si hay un error en el backend, consideramos el logout exitoso
+      // en el cliente, pero registramos el error para diagnóstico
+      console.warn("Error al cerrar sesión en el backend:", error);
+      return {
+        success: true,
+        message: "Sesión cerrada exitosamente",
+      };
     }
   }
 
@@ -149,38 +210,89 @@ class AuthService {
   }
 
   // Método para verificar si el usuario tiene un rol específico
-  hasRole(session: Session | null, role: string): boolean {
-    if (!session || !session.user) {
+  // Acepta un rol individual o un array de roles
+  hasRole(session: Session | null, role: string | string[]): boolean {
+    if (!session || !session.user || !session.user.rol) {
       return false;
     }
 
-    return session.user.rol === role;
+    // Si session.user.rol es un array, verificamos la intersección
+    if (Array.isArray(session.user.rol)) {
+      const rolesToCheck = Array.isArray(role) ? role : [role];
+      return session.user.rol.some((userRole) =>
+        rolesToCheck.includes(userRole)
+      );
+    }
+
+    // Si el rol es un string
+    if (typeof session.user.rol === "string") {
+      // Si el argumento es un array, verificamos si el rol del usuario está en el array
+      if (Array.isArray(role)) {
+        return role.includes(session.user.rol);
+      }
+      // Si el argumento es un string, comparamos directamente
+      return session.user.rol === role;
+    }
+
+    return false;
   }
 
   // Método para obtener el perfil del usuario
-  async getProfile(): Promise<AuthUser> {
+  async getProfile(): Promise<AuthResponse<AuthUser>> {
     try {
-      return await this.api.get<AuthUser>("/profile");
+      const data = await this.api.get<AuthUser>("/profile");
+      return {
+        success: true,
+        data,
+        message: "Perfil obtenido exitosamente",
+      };
     } catch (error) {
-      const apiError = error as ApiError;
-      throw new Error(
-        apiError.message || "Error al obtener el perfil del usuario"
-      );
+      return {
+        success: false,
+        error,
+        message:
+          error instanceof ApiError
+            ? error.message
+            : "Error al obtener el perfil del usuario",
+      };
     }
   }
 
   // Método para actualizar el perfil del usuario
   async updateProfile(
     data: Partial<Omit<AuthUser, "id" | "token" | "rol" | "permissions">>
-  ): Promise<AuthUser> {
+  ): Promise<AuthResponse<AuthUser>> {
     try {
-      return await this.api.put<AuthUser>("/profile", data);
+      const response = await this.api.put<AuthUser>("/profile", data);
+      return {
+        success: true,
+        data: response,
+        message: "Perfil actualizado exitosamente",
+      };
     } catch (error) {
-      const apiError = error as ApiError;
-      throw new Error(
-        apiError.message || "Error al actualizar el perfil del usuario"
-      );
+      return {
+        success: false,
+        error,
+        message:
+          error instanceof ApiError
+            ? error.message
+            : "Error al actualizar el perfil del usuario",
+      };
     }
+  }
+
+  // Verificar si un error es de un tipo específico
+  isErrorOfType(error: unknown, errorMessage: string): boolean {
+    if (error instanceof ApiError) {
+      return error.message.toLowerCase().includes(errorMessage.toLowerCase());
+    }
+    if (error instanceof Error) {
+      return error.message.toLowerCase().includes(errorMessage.toLowerCase());
+    }
+    if (typeof error === "string") {
+      return error.toLowerCase().includes(errorMessage.toLowerCase());
+    }
+    return false;
   }
 }
 

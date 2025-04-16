@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { createContext, useContext } from "react";
@@ -15,6 +16,7 @@ interface AuthContextType {
   ) => Promise<{
     success: boolean;
     error?: string;
+    errorType?: any;
   }>;
   register: (
     name: string,
@@ -23,16 +25,18 @@ interface AuthContextType {
   ) => Promise<{
     success: boolean;
     error?: string;
+    errorType?: any;
   }>;
   logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
-  hasRole: (role: string) => boolean;
+  hasRole: (role: string | string[]) => boolean;
 
   //  Métodos para recuperación de contraseña
   requestPasswordReset: (email: string) => Promise<{
     success: boolean;
     message?: string;
     error?: string;
+    errorType?: any;
   }>;
   resetPassword: (
     token: string,
@@ -42,6 +46,7 @@ interface AuthContextType {
     success: boolean;
     message?: string;
     error?: string;
+    errorType?: any;
   }>;
 }
 

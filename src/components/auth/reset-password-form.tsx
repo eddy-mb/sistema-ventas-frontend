@@ -5,26 +5,22 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { authService } from "@/services/auth-service";
-import { toast } from "sonner";
+import { useAuthContext } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  TriangleAlertIcon,
-  CheckCircle,
-  EyeIcon,
-  EyeOffIcon,
-} from "lucide-react";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { CheckCircle, EyeIcon, EyeOffIcon } from "lucide-react";
+import { PasswordIndicador } from "./Password-indicador";
 
 const resetPasswordSchema = z
   .object({
     password: z
       .string()
       .min(1, { message: "La contraseña es requerida" })
-      .min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
+      .min(8, { message: "La contraseña debe tener al menos 8 caracteres" }),
     confirmPassword: z
       .string()
       .min(1, { message: "Confirmar contraseña es requerido" }),
@@ -41,53 +37,57 @@ interface ResetPasswordFormProps {
 }
 
 export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { resetPassword, isLoading } = useAuthContext();
+  const [error, setError] = useState<unknown | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
+    watch,
   } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       password: "",
       confirmPassword: "",
     },
+    mode: "onChange",
   });
+
+  // Observar el valor de la contraseña para validación en tiempo real
+  const password = watch("password");
 
   const onSubmit = async (data: ResetPasswordFormValues) => {
     try {
-      setIsLoading(true);
       setError(null);
 
-      const response = await authService.resetPassword(
+      const response = await resetPassword(
         token,
         data.password,
         data.confirmPassword
       );
 
-      if (response.success) {
-        setIsSubmitted(true);
-        toast.success("Contraseña restablecida exitosamente");
-      } else {
+      if (!response.success) {
         setError(
-          response.message || "Ocurrió un error al restablecer la contraseña"
+          response.error || "Ocurrió un error al restablecer la contraseña"
         );
+        return;
       }
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Error al restablecer la contraseña"
-      );
-      toast.error("No se pudo restablecer la contraseña");
-    } finally {
-      setIsLoading(false);
+
+      setIsSubmitted(true);
+
+      // Redirigir al login después de 3 segundos
+      setTimeout(() => {
+        router.push("/login?passwordReset=true");
+      }, 3000);
+    } catch (err) {
+      setError(err);
+      console.error("Error al restablecer contraseña:", err);
     }
   };
 
@@ -107,8 +107,8 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         <div className="flex flex-col items-center justify-center p-6 bg-background/50 border rounded-lg">
           <CheckCircle className="h-12 w-12 text-primary mb-4" />
           <p className="text-center mb-4">
-            Tu contraseña ha sido restablecida exitosamente. Ahora puedes
-            iniciar sesión con tu nueva contraseña.
+            Tu contraseña ha sido restablecida exitosamente. Serás redirigido a
+            la página de inicio de sesión en unos segundos.
           </p>
           <Button asChild className="w-full">
             <Link href="/login">Ir al inicio de sesión</Link>
@@ -129,12 +129,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         </p>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <TriangleAlertIcon className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {error !== null && <ErrorMessage error={error} showDetails={false} />}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
@@ -144,7 +139,9 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting}
+              aria-invalid={errors.password ? "true" : "false"}
+              className={errors.password ? "border-destructive" : ""}
               {...register("password")}
             />
             <Button
@@ -178,7 +175,9 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               placeholder="••••••••"
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting}
+              aria-invalid={errors.confirmPassword ? "true" : "false"}
+              className={errors.confirmPassword ? "border-destructive" : ""}
               {...register("confirmPassword")}
             />
             <Button
@@ -207,8 +206,17 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Restableciendo..." : "Restablecer contraseña"}
+        {/* Indicadores de seguridad de contraseña */}
+        {password && <PasswordIndicador password={password} minLength={6} />}
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading || isSubmitting || !isValid}
+        >
+          {isLoading || isSubmitting
+            ? "Restableciendo..."
+            : "Restablecer contraseña"}
         </Button>
       </form>
 

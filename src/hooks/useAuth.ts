@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { authService } from "@/services/auth-service";
 import { auditService } from "@/services/audit-service";
-import { toast } from "sonner";
+import { toastErrorAuth, toastSuccess, toastError } from "@/lib/toast-utils";
 
 export function useAuth() {
   const { data: session, status, update } = useSession();
@@ -41,7 +41,7 @@ export function useAuth() {
         });
 
         if (result?.error) {
-          toast.error("Error de autenticación: " + result.error);
+          toastErrorAuth(result.error);
           return {
             success: false,
             error: result.error,
@@ -52,7 +52,10 @@ export function useAuth() {
         await update();
 
         router.refresh();
-        toast.success("Inicio de sesión exitoso");
+        toastSuccess({
+          title: "Inicio de sesión exitoso",
+          message: "Bienvenido(a) al sistema de Ama Wara Tours",
+        });
         return { success: true };
       } catch (error) {
         return {
@@ -71,13 +74,13 @@ export function useAuth() {
       try {
         setLoading(true);
         await authService.register({ name, email, password });
-        toast.success("Registro exitoso. Ahora puedes iniciar sesión.");
+        toastSuccess({
+          title: "Registro exitoso",
+          message: "Ahora puedes iniciar sesión.",
+        });
         return { success: true };
       } catch (error) {
-        toast.error(
-          "Error en el registro: " +
-            (error instanceof Error ? error.message : "Error desconocido")
-        );
+        toastErrorAuth(error);
         return {
           success: false,
           error: error instanceof Error ? error.message : "Error desconocido",
@@ -105,12 +108,15 @@ export function useAuth() {
 
       await signOut({ redirect: false });
       sessionStorage.removeItem("lastLoginTime");
-      toast.info("Sesión cerrada correctamente");
+      toastSuccess({
+        title: "Sesión cerrada",
+        message: "Has cerrado sesión correctamente",
+      });
       router.push("/login");
       router.refresh();
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
-      toast.error("Hubo un problema al cerrar la sesión");
+      toastError(error);
     } finally {
       setLoading(false);
     }
@@ -122,14 +128,14 @@ export function useAuth() {
       setLoading(true);
       const response = await authService.requestPasswordReset(email);
       if (response.success) {
-        toast.success(response.message || "Instrucciones enviadas a tu correo");
+        toastSuccess({
+          title: "Solicitud enviada",
+          message: response.message || "Instrucciones enviadas a tu correo",
+        });
       }
       return response;
     } catch (error) {
-      toast.error(
-        "Error al solicitar recuperación: " +
-          (error instanceof Error ? error.message : "Error desconocido")
-      );
+      toastErrorAuth(error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Error desconocido",
@@ -150,16 +156,15 @@ export function useAuth() {
           confirmPassword
         );
         if (response.success) {
-          toast.success(
-            response.message || "Contraseña restablecida correctamente"
-          );
+          toastSuccess({
+            title: "Contraseña restablecida",
+            message:
+              response.message || "Contraseña restablecida correctamente",
+          });
         }
         return response;
       } catch (error) {
-        toast.error(
-          "Error al restablecer contraseña: " +
-            (error instanceof Error ? error.message : "Error desconocido")
-        );
+        toastErrorAuth(error);
         return {
           success: false,
           error: error instanceof Error ? error.message : "Error desconocido",
