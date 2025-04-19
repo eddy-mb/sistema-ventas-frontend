@@ -133,7 +133,13 @@ export function useAuth() {
           message: response.message || "Instrucciones enviadas a tu correo",
         });
       }
-      return response;
+      return {
+        success: response.success,
+        message: response.message,
+        error: response.error instanceof Error ? response.error.message : 
+               typeof response.error === 'string' ? response.error : 
+               response.error ? 'Error desconocido' : undefined
+      };
     } catch (error) {
       toastErrorAuth(error);
       return {
@@ -162,7 +168,13 @@ export function useAuth() {
               response.message || "Contraseña restablecida correctamente",
           });
         }
-        return response;
+        return {
+          success: response.success,
+          message: response.message,
+          error: response.error instanceof Error ? response.error.message : 
+                 typeof response.error === 'string' ? response.error : 
+                 response.error ? 'Error desconocido' : undefined
+        };
       } catch (error) {
         toastErrorAuth(error);
         return {
@@ -184,7 +196,7 @@ export function useAuth() {
   );
 
   const hasRole = useCallback(
-    (role: string) => {
+    (role: string | string[]) => {
       return authService.hasRole(session, role);
     },
     [session]

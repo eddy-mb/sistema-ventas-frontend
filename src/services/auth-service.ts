@@ -202,11 +202,11 @@ class AuthService {
 
   // Método para verificar si el usuario tiene un permiso específico
   hasPermission(session: Session | null, permission: string): boolean {
-    if (!session || !session.user || !session.user.permissions) {
+    if (!session || !session.user || !session.user.permisos) {
       return false;
     }
 
-    return session.user.permissions.includes(permission);
+    return session.user.permisos.includes(permission);
   }
 
   // Método para verificar si el usuario tiene un rol específico
