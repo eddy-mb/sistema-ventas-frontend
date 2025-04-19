@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ama Wara Tour",
-  description: "Sistema de Ventas Ama Wara Tous",
+  title: "Ama Wara Tours",
+  description: "Sistema de Ventas Ama Wara Tours",
 };
 
 export default function RootLayout({
@@ -39,7 +39,12 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               {children}
-              <Toaster richColors position="top-right" expand={true} />
+              <Toaster
+                richColors
+                position="top-right"
+                expand={true}
+                closeButton={true}
+              />
             </ThemeProvider>
           </AuthProvider>
         </NextAuthProvider>

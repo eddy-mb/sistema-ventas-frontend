@@ -36,7 +36,6 @@ interface AuthContextType {
     success: boolean;
     message?: string;
     error?: string;
-    errorType?: any;
   }>;
   resetPassword: (
     token: string,
@@ -46,7 +45,6 @@ interface AuthContextType {
     success: boolean;
     message?: string;
     error?: string;
-    errorType?: any;
   }>;
 }
 
@@ -66,10 +64,12 @@ const defaultContextValue: AuthContextType = {
   requestPasswordReset: async () => ({
     success: false,
     error: "AuthContext no inicializado",
+    message: undefined,
   }),
   resetPassword: async () => ({
     success: false,
     error: "AuthContext no inicializado",
+    message: undefined,
   }),
 };
 

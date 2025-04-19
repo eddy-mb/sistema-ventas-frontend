@@ -9,7 +9,7 @@ import { ShieldAlert } from "lucide-react";
 interface ProtectedProps {
   children: ReactNode;
   requiredPermission?: string;
-  requiredRole?: string;
+  requiredRole?: string | string[];
   fallback?: ReactNode;
 }
 
@@ -23,7 +23,6 @@ export function Protected({
 
   if (!isAuthenticated) {
     redirect("/login");
-    return null;
   }
 
   // Verificar permisos si se especifica
