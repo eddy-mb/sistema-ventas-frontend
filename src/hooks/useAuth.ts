@@ -2,33 +2,14 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { authService } from "@/services/auth-service";
-import { auditService } from "@/services/audit-service";
 import { toastErrorAuth, toastSuccess, toastError } from "@/lib/toast-utils";
 
 export function useAuth() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-
-  // Registrar inicio de sesión cuando cambia el estado de autenticación
-  useEffect(() => {
-    if (status === "authenticated" && session?.user?.id) {
-      // Solo registramos la primera vez que se autentica (no en cada renderizado)
-      const lastLoginTime = sessionStorage.getItem("lastLoginTime");
-      const currentTime = new Date().getTime();
-
-      // Solo registrar si no hay login previo o si han pasado al menos 5 minutos
-      if (
-        !lastLoginTime ||
-        currentTime - parseInt(lastLoginTime) > 5 * 60 * 1000
-      ) {
-        auditService.logLogin(session.user.id).catch(console.error);
-        sessionStorage.setItem("lastLoginTime", currentTime.toString());
-      }
-    }
-  }, [status, session?.user?.id]);
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -95,19 +76,17 @@ export function useAuth() {
   const logout = useCallback(async () => {
     setLoading(true);
     try {
-      // Registrar cierre de sesión antes de cerrar la sesión
+      // Notificamos al backend sobre el cierre de sesión
       if (session?.user?.id) {
         // Intentar hacer logout en el backend, pero no bloquear si falla
         try {
-          await auditService.logLogout(session.user.id);
           await authService.logout();
         } catch (error) {
-          console.error("Error al registrar logout en backend:", error);
+          console.error("Error al notificar logout al backend:", error);
         }
       }
 
       await signOut({ redirect: false });
-      sessionStorage.removeItem("lastLoginTime");
       toastSuccess({
         title: "Sesión cerrada",
         message: "Has cerrado sesión correctamente",
@@ -136,9 +115,14 @@ export function useAuth() {
       return {
         success: response.success,
         message: response.message,
-        error: response.error instanceof Error ? response.error.message : 
-               typeof response.error === 'string' ? response.error : 
-               response.error ? 'Error desconocido' : undefined
+        error:
+          response.error instanceof Error
+            ? response.error.message
+            : typeof response.error === "string"
+            ? response.error
+            : response.error
+            ? "Error desconocido"
+            : undefined,
       };
     } catch (error) {
       toastErrorAuth(error);
@@ -171,9 +155,14 @@ export function useAuth() {
         return {
           success: response.success,
           message: response.message,
-          error: response.error instanceof Error ? response.error.message : 
-                 typeof response.error === 'string' ? response.error : 
-                 response.error ? 'Error desconocido' : undefined
+          error:
+            response.error instanceof Error
+              ? response.error.message
+              : typeof response.error === "string"
+              ? response.error
+              : response.error
+              ? "Error desconocido"
+              : undefined,
         };
       } catch (error) {
         toastErrorAuth(error);
