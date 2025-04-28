@@ -346,7 +346,11 @@ export default function AuditLogViewer() {
               <FilterIcon className="mr-2 h-4 w-4" />
               Aplicar Filtros
             </Button>
-            <Button variant="outline" onClick={resetFilters} disabled={loading}>
+            <Button
+              variant="secondary"
+              onClick={resetFilters}
+              disabled={loading}
+            >
               <RefreshCwIcon className="mr-2 h-4 w-4" />
               Resetear
             </Button>

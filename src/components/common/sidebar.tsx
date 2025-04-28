@@ -45,10 +45,8 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
-      <SidebarHeader className="h-16 text-center ">
-        Ama Wara Tours
-      </SidebarHeader>
+    <Sidebar className="group-data-[side=left]:border-r-0">
+      <SidebarHeader className="h-16 text-center">Ama Wara Tours</SidebarHeader>
       <SidebarContent className="gap-0">
         {/* We create a collapsible SidebarGroup for each parent. */}
         {navData.navMain.map((item) => {
@@ -69,7 +67,7 @@ export function AppSidebar() {
                         className="group/label text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sm"
                       >
                         <CollapsibleTrigger>
-                          <item.icon className="w-5 h-5" />
+                          <item.icon className="w-5 h-5 text-sidebar-accent-foreground" />
                           <span className="ml-2">{item.title}</span>
                           <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
                         </CollapsibleTrigger>
@@ -124,7 +122,7 @@ export function AppSidebar() {
                               });
                             }}
                           >
-                            <item.icon className="w-5 h-5" />
+                            <item.icon className="w-5 h-5 text-sidebar-accent-foreground" />
                             <span>{item.title}</span>
                           </Link>
                         </SidebarMenuButton>

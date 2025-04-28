@@ -10,7 +10,6 @@ import {
   Breadcrumb,
 } from "../ui/breadcrumb";
 import { SidebarTrigger } from "../ui/sidebar";
-import { SearchForm } from "./search-form";
 import { Bell } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
@@ -54,7 +53,7 @@ function Notifications() {
       {/* Notifications */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="outline" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute right-1 top-1 flex h-2 w-2 rounded-full bg-destructive" />
           </Button>
@@ -95,13 +94,10 @@ function Notifications() {
 
 export default function Header() {
   return (
-    <header className="bg-background sticky top-0 flex h-16 shrink-0 items-center gap-2 border-b px-4">
+    <header className="bg-background sticky top-0 flex h-16 shrink-0 items-center gap-2 px-4 border-b">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <DynamicBreadcrumb />
-      <div className="mr-auto">
-        <SearchForm />
-      </div>
       <ModeToggle />
       <Notifications />
       <NavbarUserMenu />
