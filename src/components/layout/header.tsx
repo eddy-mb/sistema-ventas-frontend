@@ -14,8 +14,7 @@ import { Bell } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-
-import { ModeToggle } from "./modeToggle";
+import { ModeToggle } from "../common/modeToggle";
 import { NavbarUserMenu } from "./navbar-user-menu";
 
 function DynamicBreadcrumb() {

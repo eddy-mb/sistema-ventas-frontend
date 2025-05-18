@@ -1,13 +1,13 @@
 import { Suspense } from "react";
 
-import { Footer } from "@/components/common/footer";
+import { Footer } from "@/components/layout/footer";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { SidebarContextProvider } from "@/context/siderbar-context";
 
-import { AppSidebar } from "@/components/common/sidebar";
-import Header from "@/components/common/header";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
+import Header from "@/components/layout/header";
+import { AppSidebar } from "@/components/layout/sidebar";
 
 export default function DashboardLayout({
   children,

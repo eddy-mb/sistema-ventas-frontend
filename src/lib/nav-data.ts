@@ -29,7 +29,6 @@ export const navData = {
     },
     {
       title: "Gestión de Clientes",
-      href: "/clientes",
       icon: Users,
       submenu: [
         {
@@ -41,7 +40,6 @@ export const navData = {
     },
     {
       title: "Gestión de Productos",
-      href: "/productos",
       icon: Package,
       submenu: [
         {
@@ -58,7 +56,6 @@ export const navData = {
     },
     {
       title: "Gestión de Ventas",
-      href: "/ventas",
       icon: ShoppingCart,
       submenu: [
         {
@@ -80,7 +77,6 @@ export const navData = {
     },
     {
       title: "Gestión de Reportes",
-      href: "/reportes",
       icon: BarChart3,
       submenu: [
         {
@@ -112,7 +108,6 @@ export const navData = {
     },
     {
       title: "Gestión de Administración",
-      href: "/administracion",
       icon: Settings,
       submenu: [
         {
