@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosRequestConfig } from "axios";
-import { getSession } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
 
 // Clase para errores de API
 export class ApiError extends Error {
@@ -42,10 +42,24 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Flag para evitar múltiples redirecciones
+let isRedirecting = false;
+
 // Interceptor para manejar errores de manera uniforme
 api.interceptors.response.use(
   (response) => response.data,
-  (error) => {
+  async (error) => {
+    // Si recibimos un 401 (Unauthorized) o 403 (Forbidden), el token ha expirado
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Prevenimos redirecciones múltiples si hay varias peticiones fallando
+      if (!isRedirecting && typeof window !== "undefined") {
+        isRedirecting = true;
+
+        // Cerrar sesión y redirigir al login
+        await signOut({ redirect: false });
+        window.location.href = "/login?expired=true";
+      }
+    }
     if (error.response) {
       const status = error.response.status;
       const data = error.response.data;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -45,7 +45,15 @@ export default function LoginForm() {
   const registered = searchParams.get("registered") === "true";
   const emailVerified = searchParams.get("emailVerified") === "true";
   const passwordReset = searchParams.get("passwordReset") === "true";
+  const expired = searchParams.get("expired") === "true";
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+
+  // Mostrar mensaje si el token expiró
+  useEffect(() => {
+    if (expired) {
+      setError("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+    }
+  }, [expired]);
 
   const {
     register,
