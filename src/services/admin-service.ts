@@ -1,5 +1,9 @@
 import { createApi } from "@/lib/api";
-import { buildUrlParams, normalizeResponse, normalizePaginatedResponse } from "@/lib/api-helpers";
+import {
+  buildUrlParams,
+  normalizeResponse,
+  normalizePaginatedResponse,
+} from "@/lib/api-helpers";
 import {
   Rol,
   Permiso,
@@ -9,8 +13,9 @@ import {
   UsuarioCreateData,
   UsuarioUpdateData,
   CambiarContrasenaData,
+  RestablecerContrasenaData,
 } from "@/types/admin.types";
-import { Usuario } from "@/types/auth.types";
+import { Usuario } from "@/types/admin.types";
 
 // Clase para el servicio de administración
 class AdminService {
@@ -38,7 +43,7 @@ class AdminService {
   ): Promise<{ data: Usuario[]; total: number }> {
     try {
       const params = buildUrlParams(filters);
-      const response = await this.usuarioApi.get<any>(`?${params}`);
+      const response = await this.usuarioApi.get(`?${params}`);
       return normalizePaginatedResponse<Usuario>(response);
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
@@ -51,7 +56,8 @@ class AdminService {
    */
   async getUsuarioById(id: string): Promise<Usuario> {
     try {
-      return await this.usuarioApi.get<Usuario>(`/${id}`);
+      const response = await this.usuarioApi.get<{ data: Usuario }>(`/${id}`);
+      return response.data;
     } catch (error) {
       console.error(`Error al obtener el usuario con ID ${id}:`, error);
       throw error;
@@ -90,10 +96,14 @@ class AdminService {
     estado: "activo" | "inactivo"
   ): Promise<Usuario> {
     try {
-      const endpoint = estado === "activo" ? `/${id}/activate` : `/${id}/deactivate`;
+      const endpoint =
+        estado === "activo" ? `/${id}/activate` : `/${id}/deactivate`;
       return await this.usuarioApi.patch<Usuario>(endpoint, {});
     } catch (error) {
-      console.error(`Error al cambiar el estado del usuario con ID ${id}:`, error);
+      console.error(
+        `Error al cambiar el estado del usuario con ID ${id}:`,
+        error
+      );
       throw error;
     }
   }
@@ -106,31 +116,48 @@ class AdminService {
     data: CambiarContrasenaData
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await this.usuarioApi.patch<any>(`/${id}/change-password`, data);
+      const response = await this.usuarioApi.patch<any>(
+        `/${id}/change-password`,
+        data
+      );
       return {
         success: true,
         message: response.message || "Contraseña cambiada exitosamente",
       };
     } catch (error) {
-      console.error(`Error al cambiar la contraseña del usuario con ID ${id}:`, error);
+      console.error(
+        `Error al cambiar la contraseña del usuario con ID ${id}:`,
+        error
+      );
       throw error;
     }
   }
 
   /**
    * Restablece la contraseña de un usuario
+   * @param id ID del usuario
+   * @param data Datos para restablecer la contraseña (opcional)
+   * @returns Información de éxito o error
    */
   async resetPassword(
-    id: string
+    id: string,
+    data?: RestablecerContrasenaData
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await this.usuarioApi.patch<any>(`/${id}/reset-password`, {});
+      const response = await this.usuarioApi.patch<{ message: string }>(
+        `/${id}/reset-password`,
+        data || {}
+      );
+
       return {
         success: true,
         message: response.message || "Contraseña restablecida exitosamente",
       };
     } catch (error) {
-      console.error(`Error al restablecer la contraseña del usuario con ID ${id}:`, error);
+      console.error(
+        `Error al restablecer la contraseña del usuario con ID ${id}:`,
+        error
+      );
       throw error;
     }
   }
@@ -234,7 +261,10 @@ class AdminService {
       const response = await this.permisoApi.get<any>(`?modulo=${modulo}`);
       return normalizeResponse<Permiso>(response);
     } catch (error) {
-      console.error(`Error al obtener los permisos del módulo ${modulo}:`, error);
+      console.error(
+        `Error al obtener los permisos del módulo ${modulo}:`,
+        error
+      );
       throw error;
     }
   }
@@ -288,10 +318,15 @@ class AdminService {
     categoria: string
   ): Promise<ParametroSistema[]> {
     try {
-      const response = await this.configuracionApi.get<any>(`?categoria=${categoria}`);
+      const response = await this.configuracionApi.get<any>(
+        `?categoria=${categoria}`
+      );
       return normalizeResponse<ParametroSistema>(response);
     } catch (error) {
-      console.error(`Error al obtener los parámetros de la categoría ${categoria}:`, error);
+      console.error(
+        `Error al obtener los parámetros de la categoría ${categoria}:`,
+        error
+      );
       throw error;
     }
   }
@@ -301,7 +336,9 @@ class AdminService {
    */
   async updateParametro(id: string, valor: string): Promise<ParametroSistema> {
     try {
-      return await this.configuracionApi.put<ParametroSistema>(`/${id}`, { valor });
+      return await this.configuracionApi.put<ParametroSistema>(`/${id}`, {
+        valor,
+      });
     } catch (error) {
       console.error(`Error al actualizar el parámetro con ID ${id}:`, error);
       throw error;
