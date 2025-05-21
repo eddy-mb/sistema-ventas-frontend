@@ -3,7 +3,6 @@ import {
   BarChart3,
   Calendar,
   ChartPie,
-  FileCog,
   FileText,
   LayoutDashboard,
   Package,
@@ -110,11 +109,6 @@ export const navData = {
       title: "Gestión de Administración",
       icon: Settings,
       submenu: [
-        {
-          title: "administracion",
-          href: "/administracion",
-          icon: FileCog,
-        },
         {
           title: "Usuarios",
           href: "/administracion/usuarios",
