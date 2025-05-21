@@ -116,7 +116,7 @@ class AdminService {
     data: CambiarContrasenaData
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await this.usuarioApi.patch<any>(
+      const response = await this.usuarioApi.patch<{ message: string }>(
         `/${id}/change-password`,
         data
       );
@@ -169,7 +169,7 @@ class AdminService {
    */
   async getRoles(): Promise<Rol[]> {
     try {
-      const response = await this.rolApi.get<any>("");
+      const response = await this.rolApi.get("");
       return normalizeResponse<Rol>(response);
     } catch (error) {
       console.error("Error al obtener los roles:", error);
@@ -182,7 +182,8 @@ class AdminService {
    */
   async getRolById(id: string): Promise<Rol> {
     try {
-      return await this.rolApi.get<Rol>(`/${id}`);
+      const response = await this.rolApi.get<{ data: Rol }>(`/${id}`);
+      return response.data;
     } catch (error) {
       console.error(`Error al obtener el rol con ID ${id}:`, error);
       throw error;
@@ -230,8 +231,9 @@ class AdminService {
    */
   async changeRolStatus(id: string, estado: boolean): Promise<Rol> {
     try {
-      const endpoint = estado ? `/${id}/activate` : `/${id}/deactivate`;
-      return await this.rolApi.patch<Rol>(endpoint, {});
+      return await this.rolApi.patch<Rol>(`/${id}/estado`, {
+        estado,
+      });
     } catch (error) {
       console.error(`Error al cambiar el estado del rol con ID ${id}:`, error);
       throw error;
