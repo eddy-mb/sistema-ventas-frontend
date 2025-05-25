@@ -247,7 +247,7 @@ class AdminService {
    */
   async getPermisos(): Promise<Permiso[]> {
     try {
-      const response = await this.permisoApi.get<any>("");
+      const response = await this.permisoApi.get("");
       return normalizeResponse<Permiso>(response);
     } catch (error) {
       console.error("Error al obtener los permisos:", error);
@@ -260,7 +260,7 @@ class AdminService {
    */
   async getPermisosByModulo(modulo: string): Promise<Permiso[]> {
     try {
-      const response = await this.permisoApi.get<any>(`?modulo=${modulo}`);
+      const response = await this.permisoApi.get(`?modulo=${modulo}`);
       return normalizeResponse<Permiso>(response);
     } catch (error) {
       console.error(
@@ -283,14 +283,17 @@ class AdminService {
       usuario?: string;
       accion?: string;
       modulo?: string;
-      resultado?: "éxito" | "error";
+      resultado?: "exito" | "error";
       page?: number;
       limit?: number;
     } = {}
   ): Promise<{ data: LogAuditoria[]; total: number }> {
     try {
       const params = buildUrlParams(filters);
-      const response = await this.auditoriaApi.get<any>(`?${params}`);
+      const response = await this.auditoriaApi.get<{
+        data: LogAuditoria[];
+        total: number;
+      }>(`?${params}`);
       return normalizePaginatedResponse<LogAuditoria>(response);
     } catch (error) {
       console.error("Error al obtener los logs de auditoría:", error);
@@ -305,7 +308,7 @@ class AdminService {
    */
   async getParametros(): Promise<ParametroSistema[]> {
     try {
-      const response = await this.configuracionApi.get<any>("");
+      const response = await this.configuracionApi.get("");
       return normalizeResponse<ParametroSistema>(response);
     } catch (error) {
       console.error("Error al obtener los parámetros del sistema:", error);
@@ -320,7 +323,7 @@ class AdminService {
     categoria: string
   ): Promise<ParametroSistema[]> {
     try {
-      const response = await this.configuracionApi.get<any>(
+      const response = await this.configuracionApi.get(
         `?categoria=${categoria}`
       );
       return normalizeResponse<ParametroSistema>(response);
