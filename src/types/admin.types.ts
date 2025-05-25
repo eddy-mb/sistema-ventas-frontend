@@ -43,7 +43,19 @@ export interface LogAuditoria {
   modulo: string;
   detalles: string;
   ipOrigen: string;
-  resultado: "éxito" | "error";
+  resultado: "exito" | "error";
+}
+
+// Interfaz para filtros de log de auditoría
+export interface LogAuditoriaFilter {
+  pagina: number;
+  limite: number;
+  fechaInicio?: string;
+  fechaFin?: string;
+  modulo?: string;
+  accion?: string;
+  resultado?: "exito" | "error";
+  search?: string;
 }
 
 // Interfaz para parámetro del sistema
