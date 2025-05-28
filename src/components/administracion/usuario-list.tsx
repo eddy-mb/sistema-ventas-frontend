@@ -49,12 +49,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Pagination } from "@/components/ui/pagination";
 import { Label } from "@/components/ui/label";
 
 import { adminService } from "@/services/admin-service";
 import { Usuario, UsuarioFilter, Rol } from "@/types/admin.types";
 import { formatDate } from "@/lib/utils";
+import { CustomPagination } from "../common/CustomPagination";
 
 // Componente principal para la lista de usuarios
 export default function UsuarioList() {
@@ -108,8 +108,7 @@ export default function UsuarioList() {
     try {
       const rolesData = await adminService.getRoles();
       setRoles(rolesData);
-    } catch (error) {
-      console.error("Error al cargar roles:", error);
+    } catch {
       toast.error("No se pudieron cargar los roles");
     }
   }, []);
@@ -121,8 +120,7 @@ export default function UsuarioList() {
       const { data, total } = await adminService.getUsuarios(filters);
       setUsuarios(data);
       setTotal(total);
-    } catch (error) {
-      console.error("Error al cargar usuarios:", error);
+    } catch {
       toast.error("No se pudieron cargar los usuarios");
     } finally {
       setLoading(false);
@@ -147,8 +145,7 @@ export default function UsuarioList() {
           } exitosamente`
         );
         loadUsuarios(); // Recargar usuarios
-      } catch (error) {
-        console.error("Error al cambiar estado del usuario:", error);
+      } catch {
         toast.error("No se pudo cambiar el estado del usuario");
       } finally {
         setLoadingAction(null);
@@ -210,8 +207,7 @@ export default function UsuarioList() {
 
       toast.success("Contraseña restablecida correctamente");
       setResetPasswordDialog((prev) => ({ ...prev, open: false }));
-    } catch (error) {
-      console.error("Error al restablecer contraseña:", error);
+    } catch {
       toast.error("No se pudo restablecer la contraseña del usuario");
     } finally {
       setLoadingAction(null);
@@ -490,13 +486,22 @@ export default function UsuarioList() {
 
       {/* Paginación */}
       {total > 0 && (
-        <div className="flex justify-center mt-4">
-          <Pagination
-            currentPage={filters.pagina || 1}
-            totalPages={Math.ceil(total / (filters.limite || 10))}
-            onPageChange={handlePageChange}
-          />
-        </div>
+        // <div className="flex justify-center mt-4">
+        //   <Pagination
+        //     currentPage={filters.pagina || 1}
+        //     totalPages={Math.ceil(total / (filters.limite || 10))}
+        //     onPageChange={handlePageChange}
+        //   />
+        // </div>
+        <CustomPagination
+          total={total}
+          pagina={filters.pagina}
+          limite={filters.limite}
+          cambiarPagina={handlePageChange}
+          cambiarLimite={(limite: number) =>
+            handleFilterChange("limite", limite)
+          }
+        />
       )}
 
       {/* Diálogo de confirmación */}

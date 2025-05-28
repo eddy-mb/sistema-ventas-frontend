@@ -15,9 +15,7 @@ import { authService } from "@/services/auth-service";
 
 // Esquema de validación para el formulario
 const forgotPasswordSchema = z.object({
-  email: z
-    .string()
-    .email({ message: "Debe ser un correo electrónico válido" }),
+  email: z.string().email({ message: "Debe ser un correo electrónico válido" }),
 });
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
@@ -47,17 +45,20 @@ export default function ForgotPasswordForm() {
       const result = await authService.requestPasswordReset(data.email);
 
       if (!result.success) {
-        setError(result.error || "Error al solicitar restablecimiento de contraseña");
-        toast.error(result.error || "Error al solicitar restablecimiento de contraseña");
+        setError(
+          result.error || "Error al solicitar restablecimiento de contraseña"
+        );
+        toast.error(
+          result.error || "Error al solicitar restablecimiento de contraseña"
+        );
         return;
       }
 
       // Mostrar mensaje de éxito
       setSuccess(true);
       toast.success("Instrucciones enviadas a tu correo electrónico");
-    } catch (err) {
+    } catch {
       setError("Ocurrió un error inesperado. Por favor, intenta de nuevo.");
-      console.error("Error al solicitar restablecimiento:", err);
     } finally {
       setLoading(false);
     }
@@ -75,7 +76,9 @@ export default function ForgotPasswordForm() {
         <Alert className="bg-green-50 border-green-200 text-green-800">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-700">
-            Si existe una cuenta con ese correo electrónico, recibirás instrucciones para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada.
+            Si existe una cuenta con ese correo electrónico, recibirás
+            instrucciones para restablecer tu contraseña. Por favor, revisa tu
+            bandeja de entrada.
           </AlertDescription>
         </Alert>
       ) : (

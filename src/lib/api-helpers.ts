@@ -71,8 +71,6 @@ export function handleServiceError(
   success: false;
   error: string;
 } {
-  console.error("Error de servicio:", error);
-
   if (error instanceof ApiError) {
     // Si es un error de nuestra API con mensaje personalizado
     return {

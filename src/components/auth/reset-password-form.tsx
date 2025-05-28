@@ -79,9 +79,8 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
       // Redireccionar al login con mensaje de éxito
       router.push("/login?passwordReset=true");
-    } catch (err) {
+    } catch {
       setError("Ocurrió un error inesperado. Por favor, intenta de nuevo.");
-      console.error("Error al restablecer contraseña:", err);
     } finally {
       setLoading(false);
     }

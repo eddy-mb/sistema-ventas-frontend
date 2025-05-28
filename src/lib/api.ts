@@ -16,6 +16,7 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.status = status;
     this.errors = errors;
+    Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
 
@@ -49,6 +50,7 @@ let isRedirecting = false;
 api.interceptors.response.use(
   (response) => response.data,
   async (error) => {
+    // console.log(JSON.stringify(error));
     // Si recibimos un 401 (Unauthorized) o 403 (Forbidden), el token ha expirado
     if (error.response?.status === 401 || error.response?.status === 403) {
       // Prevenimos redirecciones múltiples si hay varias peticiones fallando
@@ -66,11 +68,15 @@ api.interceptors.response.use(
       const message = data?.message || "Error en la solicitud";
       const errors = data?.errors || {};
 
-      throw new ApiError(message, status, errors);
+      return Promise.reject(new ApiError(message, status, errors));
     } else if (error.request) {
-      throw new ApiError("No se recibió respuesta del servidor");
+      return Promise.reject(
+        new ApiError("No se recibió respuesta del servidor")
+      );
     } else {
-      throw new ApiError(error.message || "Error al realizar la solicitud");
+      return Promise.reject(
+        new ApiError(error.message || "Error al realizar la solicitud")
+      );
     }
   }
 );

@@ -78,8 +78,6 @@ export const authConfig: NextAuthConfig = {
           );
 
           if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Error respuesta:", errorData);
             return null;
           }
 
@@ -94,8 +92,7 @@ export const authConfig: NextAuthConfig = {
             permisos: data.usuario.permisos || [],
             accessToken: data.access_token,
           };
-        } catch (error) {
-          console.error("Error en autenticación:", error);
+        } catch {
           return null;
         }
       },

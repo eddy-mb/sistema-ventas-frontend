@@ -93,8 +93,8 @@ export default function LoginForm() {
       });
       router.push(callbackUrl);
       router.refresh();
-    } catch (err) {
-      console.error("Error de inicio de sesión:", err);
+    } catch {
+      toast.error("Ocurrió un error inesperado. Por favor, intenta de nuevo.");
     } finally {
       setLoading(false);
     }

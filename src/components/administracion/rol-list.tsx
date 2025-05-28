@@ -72,8 +72,7 @@ export default function RolList() {
       setLoading(true);
       const rolesData = await adminService.getRoles();
       setRoles(rolesData);
-    } catch (error) {
-      console.error("Error al cargar roles:", error);
+    } catch {
       toast.error("No se pudieron cargar los roles");
     } finally {
       setLoading(false);
@@ -95,8 +94,7 @@ export default function RolList() {
           `Rol ${estado ? "activado" : "desactivado"} exitosamente`
         );
         loadRoles(); // Recargar roles
-      } catch (error) {
-        console.error("Error al cambiar estado del rol:", error);
+      } catch {
         toast.error("No se pudo cambiar el estado del rol");
       } finally {
         setLoadingAction(null);

@@ -23,8 +23,7 @@ export function useAuth() {
       await signOut({ redirect: false });
       toast.success("Sesión cerrada correctamente");
       router.push("/login?logout=true");
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
+    } catch {
       toast.error("Error al cerrar sesión");
     }
   };

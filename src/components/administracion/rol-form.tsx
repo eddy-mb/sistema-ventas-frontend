@@ -81,8 +81,7 @@ export default function RolForm({ id }: RolFormProps) {
             nombre: rolData.nombre,
             descripcion: rolData.descripcion,
           });
-        } catch (error) {
-          console.error("Error al cargar rol:", error);
+        } catch {
           toast.error("No se pudo cargar la información del rol");
           router.push("/administracion/roles");
         } finally {
@@ -122,7 +121,6 @@ export default function RolForm({ id }: RolFormProps) {
       router.push("/administracion/roles");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error("Error al guardar rol:", error);
       setError(error.message || "Error al guardar rol");
       toast.error("No se pudo guardar el rol");
     } finally {

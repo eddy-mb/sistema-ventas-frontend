@@ -106,9 +106,8 @@ export default function RegisterForm() {
 
       // Redireccionar al login con mensaje de éxito
       router.push("/login?registered=true");
-    } catch (err) {
+    } catch {
       setError("Ocurrió un error inesperado. Por favor, intenta de nuevo.");
-      console.error("Error de registro:", err);
     } finally {
       setLoading(false);
     }

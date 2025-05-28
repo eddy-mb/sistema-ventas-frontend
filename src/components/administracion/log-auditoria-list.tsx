@@ -161,7 +161,6 @@ export const LogAuditoriaList: React.FC = () => {
 
         setEstadoCarga({ cargandoLogs: false, error: errorMessage });
         toast.error(errorMessage);
-        console.error("Error cargando logs:", err);
       } finally {
         setEstadoCarga((prev) => ({ ...prev, cargandoLogs: false }));
       }
