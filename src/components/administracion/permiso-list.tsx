@@ -53,8 +53,7 @@ export default function PermisoList() {
         new Set(permisosData.map((p) => p.modulo))
       );
       setModules(uniqueModules.sort());
-    } catch (error) {
-      console.error("Error al cargar permisos:", error);
+    } catch {
       toast.error("No se pudieron cargar los permisos");
     } finally {
       setLoading(false);

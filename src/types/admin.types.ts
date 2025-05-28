@@ -111,6 +111,6 @@ export interface UsuarioFilter {
   search?: string;
   estado?: "activo" | "inactivo";
   rol?: string;
-  pagina?: number;
-  limite?: number;
+  pagina: number;
+  limite: number;
 }

@@ -39,14 +39,16 @@ class AdminService {
    * Obtiene la lista de usuarios con filtros opcionales
    */
   async getUsuarios(
-    filters: UsuarioFilter = {}
+    filters: UsuarioFilter = {
+      pagina: 1,
+      limite: 10,
+    }
   ): Promise<{ data: Usuario[]; total: number }> {
     try {
       const params = buildUrlParams(filters);
       const response = await this.usuarioApi.get(`?${params}`);
       return normalizePaginatedResponse<Usuario>(response);
     } catch (error) {
-      console.error("Error al obtener usuarios:", error);
       throw error;
     }
   }
@@ -59,7 +61,6 @@ class AdminService {
       const response = await this.usuarioApi.get<{ data: Usuario }>(`/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`Error al obtener el usuario con ID ${id}:`, error);
       throw error;
     }
   }
@@ -71,7 +72,6 @@ class AdminService {
     try {
       return await this.usuarioApi.post<Usuario>("", data);
     } catch (error) {
-      console.error("Error al crear el usuario:", error);
       throw error;
     }
   }
@@ -83,7 +83,6 @@ class AdminService {
     try {
       return await this.usuarioApi.put<Usuario>(`/${id}`, data);
     } catch (error) {
-      console.error(`Error al actualizar el usuario con ID ${id}:`, error);
       throw error;
     }
   }
@@ -100,10 +99,6 @@ class AdminService {
         estado === "activo" ? `/${id}/activate` : `/${id}/deactivate`;
       return await this.usuarioApi.patch<Usuario>(endpoint, {});
     } catch (error) {
-      console.error(
-        `Error al cambiar el estado del usuario con ID ${id}:`,
-        error
-      );
       throw error;
     }
   }
@@ -125,10 +120,6 @@ class AdminService {
         message: response.message || "Contraseña cambiada exitosamente",
       };
     } catch (error) {
-      console.error(
-        `Error al cambiar la contraseña del usuario con ID ${id}:`,
-        error
-      );
       throw error;
     }
   }
@@ -154,10 +145,6 @@ class AdminService {
         message: response.message || "Contraseña restablecida exitosamente",
       };
     } catch (error) {
-      console.error(
-        `Error al restablecer la contraseña del usuario con ID ${id}:`,
-        error
-      );
       throw error;
     }
   }
@@ -172,7 +159,6 @@ class AdminService {
       const response = await this.rolApi.get("");
       return normalizeResponse<Rol>(response);
     } catch (error) {
-      console.error("Error al obtener los roles:", error);
       throw error;
     }
   }
@@ -185,7 +171,6 @@ class AdminService {
       const response = await this.rolApi.get<{ data: Rol }>(`/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`Error al obtener el rol con ID ${id}:`, error);
       throw error;
     }
   }
@@ -201,7 +186,6 @@ class AdminService {
     try {
       return await this.rolApi.post<Rol>("", data);
     } catch (error) {
-      console.error("Error al crear el rol:", error);
       throw error;
     }
   }
@@ -221,7 +205,6 @@ class AdminService {
     try {
       return await this.rolApi.put<Rol>(`/${id}`, data);
     } catch (error) {
-      console.error(`Error al actualizar el rol con ID ${id}:`, error);
       throw error;
     }
   }
@@ -235,7 +218,6 @@ class AdminService {
         estado,
       });
     } catch (error) {
-      console.error(`Error al cambiar el estado del rol con ID ${id}:`, error);
       throw error;
     }
   }
@@ -250,7 +232,6 @@ class AdminService {
       const response = await this.permisoApi.get("");
       return normalizeResponse<Permiso>(response);
     } catch (error) {
-      console.error("Error al obtener los permisos:", error);
       throw error;
     }
   }
@@ -263,10 +244,6 @@ class AdminService {
       const response = await this.permisoApi.get(`?modulo=${modulo}`);
       return normalizeResponse<Permiso>(response);
     } catch (error) {
-      console.error(
-        `Error al obtener los permisos del módulo ${modulo}:`,
-        error
-      );
       throw error;
     }
   }
@@ -296,7 +273,6 @@ class AdminService {
       }>(`?${params}`);
       return normalizePaginatedResponse<LogAuditoria>(response);
     } catch (error) {
-      console.error("Error al obtener los logs de auditoría:", error);
       throw error;
     }
   }
@@ -311,7 +287,6 @@ class AdminService {
       const response = await this.configuracionApi.get("");
       return normalizeResponse<ParametroSistema>(response);
     } catch (error) {
-      console.error("Error al obtener los parámetros del sistema:", error);
       throw error;
     }
   }
@@ -328,10 +303,6 @@ class AdminService {
       );
       return normalizeResponse<ParametroSistema>(response);
     } catch (error) {
-      console.error(
-        `Error al obtener los parámetros de la categoría ${categoria}:`,
-        error
-      );
       throw error;
     }
   }
@@ -345,7 +316,6 @@ class AdminService {
         valor,
       });
     } catch (error) {
-      console.error(`Error al actualizar el parámetro con ID ${id}:`, error);
       throw error;
     }
   }

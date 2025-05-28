@@ -8,8 +8,6 @@ export function handleServiceError(
   error: unknown,
   defaultMessage = "Error desconocido"
 ): { success: false; error: string } {
-  console.error(defaultMessage, error);
-
   return {
     success: false,
     error:

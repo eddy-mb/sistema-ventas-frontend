@@ -126,8 +126,7 @@ export default function UsuarioForm({ id }: UsuarioFormProps) {
       try {
         const rolesData = await adminService.getRoles();
         setRoles(rolesData);
-      } catch (error) {
-        console.error("Error al cargar roles:", error);
+      } catch {
         toast.error("No se pudieron cargar los roles disponibles");
       }
     };
@@ -154,8 +153,7 @@ export default function UsuarioForm({ id }: UsuarioFormProps) {
             email: usuario.email,
             roles: userRoleIds,
           });
-        } catch (error) {
-          console.error("Error al cargar usuario:", error);
+        } catch {
           toast.error("No se pudo cargar la información del usuario");
           router.push("/administracion/usuarios");
         } finally {
@@ -228,9 +226,7 @@ export default function UsuarioForm({ id }: UsuarioFormProps) {
       router.push("/administracion/usuarios");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error("Error al guardar usuario:", error);
-
-      if (error.errors) {
+      if (error.errors && Object.keys(error.errors).length > 0) {
         // Si hay errores específicos por campo
         const errorMessage = Object.entries(error.errors)
           .map(
@@ -242,8 +238,7 @@ export default function UsuarioForm({ id }: UsuarioFormProps) {
       } else {
         setError(error.message || "Error al guardar usuario");
       }
-
-      toast.error("No se pudo guardar el usuario");
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

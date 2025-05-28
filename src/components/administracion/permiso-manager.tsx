@@ -97,8 +97,7 @@ export default function PermisoManager({ rolId }: PermisoManagerProps) {
       );
 
       setModulosPermisos(modulosOrdenados);
-    } catch (error) {
-      console.error("Error al cargar datos:", error);
+    } catch {
       toast.error("No se pudo cargar la información del rol y permisos");
       setError("Error al cargar datos. Intente nuevamente.");
     } finally {
@@ -140,8 +139,7 @@ export default function PermisoManager({ rolId }: PermisoManagerProps) {
 
       // Recargar datos para mantener sincronización
       await loadRolAndPermisos();
-    } catch (error) {
-      console.error("Error al guardar permisos:", error);
+    } catch {
       setError("No se pudieron guardar los permisos. Intente nuevamente.");
       toast.error("Error al guardar permisos");
     } finally {
