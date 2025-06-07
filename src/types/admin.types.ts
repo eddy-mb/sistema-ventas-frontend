@@ -5,7 +5,7 @@ export interface Usuario {
   nombre: string;
   apellidos: string;
   email: string;
-  estado: "activo" | "inactivo";
+  estado: "Activo" | "Inactivo";
   ultimoAcceso?: string;
   fechaCreacion: string;
   fechaActualizacion: string;
@@ -43,7 +43,7 @@ export interface LogAuditoria {
   modulo: string;
   detalles: string;
   ipOrigen: string;
-  resultado: "exito" | "error";
+  resultado: "Exito" | "Error";
 }
 
 // Interfaz para filtros de log de auditoría
@@ -54,7 +54,7 @@ export interface LogAuditoriaFilter {
   fechaFin?: string;
   modulo?: string;
   accion?: string;
-  resultado?: "exito" | "error";
+  resultado?: "Exito" | "Error";
   search?: string;
 }
 
@@ -63,7 +63,7 @@ export interface ParametroSistema {
   id: string;
   nombre: string;
   valor: string;
-  tipoDato: "texto" | "número" | "booleano";
+  tipoDato: "Texto" | "Numero" | "Booleano";
   descripcion: string;
   categoria: string;
   requiereReinicio: boolean;
@@ -109,7 +109,7 @@ export interface RestablecerContrasenaData {
 // Interfaz para filtros de búsqueda de usuarios
 export interface UsuarioFilter {
   search?: string;
-  estado?: "activo" | "inactivo";
+  estado?: "Activo" | "Inactivo";
   rol?: string;
   pagina: number;
   limite: number;

@@ -145,7 +145,7 @@ export default function ConfiguracionForm() {
     const fieldId = param.id;
 
     switch (param.tipoDato) {
-      case "booleano":
+      case "Booleano":
         return (
           <div className="flex items-center space-x-2">
             <Switch
@@ -162,7 +162,7 @@ export default function ConfiguracionForm() {
           </div>
         );
 
-      case "número":
+      case "Numero":
         return (
           <Input
             id={fieldId}
