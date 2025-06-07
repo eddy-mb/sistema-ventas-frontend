@@ -260,7 +260,7 @@ class AdminService {
       usuario?: string;
       accion?: string;
       modulo?: string;
-      resultado?: "exito" | "error";
+      resultado?: "Exito" | "Error";
       page?: number;
       limit?: number;
     } = {}

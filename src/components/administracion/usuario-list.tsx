@@ -287,8 +287,8 @@ export default function UsuarioList() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="activo">Activos</SelectItem>
-                    <SelectItem value="inactivo">Inactivos</SelectItem>
+                    <SelectItem value="Activo">Activos</SelectItem>
+                    <SelectItem value="Inactivo">Inactivos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -397,10 +397,10 @@ export default function UsuarioList() {
                   <TableCell>
                     <Badge
                       variant={
-                        usuario.estado === "activo" ? "success" : "secondary"
+                        usuario.estado === "Activo" ? "success" : "secondary"
                       }
                     >
-                      {usuario.estado === "activo" ? "Activo" : "Inactivo"}
+                      {usuario.estado}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -430,7 +430,7 @@ export default function UsuarioList() {
                           Editar
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        {usuario.estado === "activo" ? (
+                        {usuario.estado === "Activo" ? (
                           <DropdownMenuItem
                             onClick={() =>
                               showConfirmDialog(

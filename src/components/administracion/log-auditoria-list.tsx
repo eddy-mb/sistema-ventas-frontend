@@ -53,7 +53,7 @@ const MODULOS = [
 
 const ACCIONES = ["Crear", "Actualizar", "Eliminar", "Login"] as const;
 
-const RESULTADOS: Array<"exito" | "error"> = ["exito", "error"];
+const RESULTADOS: Array<"Exito" | "Error"> = ["Exito", "Error"];
 
 // Estado inicial de filtros
 const FILTROS_INICIALES: LogAuditoriaFilter = {
@@ -245,19 +245,6 @@ export const LogAuditoriaList: React.FC = () => {
     }
   }, []);
 
-  // Función para obtener la variante del badge según el resultado
-  const obtenerVarianteBadge = useCallback(
-    (resultado: string): "success" | "destructive" => {
-      return resultado === "exito" ? "success" : "destructive";
-    },
-    []
-  );
-
-  // Función para obtener el texto del badge
-  const obtenerTextoBadge = useCallback((resultado: string): string => {
-    return resultado === "exito" ? "Éxito" : "Error";
-  }, []);
-
   // Verificar si hay filtros activos
   const tienesFiltrosActivos = useMemo(() => {
     return (
@@ -437,7 +424,7 @@ export const LogAuditoriaList: React.FC = () => {
                   onValueChange={(value) =>
                     actualizarFiltro(
                       "resultado",
-                      value === "all" ? undefined : (value as "exito" | "error")
+                      value === "all" ? undefined : (value as "Exito" | "Error")
                     )
                   }
                 >
@@ -448,7 +435,7 @@ export const LogAuditoriaList: React.FC = () => {
                     <SelectItem value="all">Todos los resultados</SelectItem>
                     {RESULTADOS.map((resultado) => (
                       <SelectItem key={resultado} value={resultado}>
-                        {resultado === "exito" ? "Éxito" : "Error"}
+                        {resultado}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -521,8 +508,14 @@ export const LogAuditoriaList: React.FC = () => {
                         <TableCell>{capitalize(log.modulo)}</TableCell>
                         <TableCell>{log.accion}</TableCell>
                         <TableCell>
-                          <Badge variant={obtenerVarianteBadge(log.resultado)}>
-                            {obtenerTextoBadge(log.resultado)}
+                          <Badge
+                            variant={
+                              log.resultado === "Exito"
+                                ? "success"
+                                : "destructive"
+                            }
+                          >
+                            {log.resultado}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -606,9 +599,13 @@ export const LogAuditoriaList: React.FC = () => {
                     Resultado
                   </h4>
                   <Badge
-                    variant={obtenerVarianteBadge(logSeleccionado.resultado)}
+                    variant={
+                      logSeleccionado.resultado === "Exito"
+                        ? "success"
+                        : "destructive"
+                    }
                   >
-                    {obtenerTextoBadge(logSeleccionado.resultado)}
+                    {logSeleccionado.resultado}
                   </Badge>
                 </div>
               </div>
